@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    
+        <title>Courses</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </h:head>
+    <h:body>
+        
+        <h:form id="form">
+        <p:growl id="messages" showDetail="true" />
+         <p:tabMenu activeIndex="#{param.i}">
+        
+                
+                <p:menuitem value=" Students "  outcome="Students.xhtml"  icon="pi pi-users" >
+                    <f:param name="i" value="1"/>
+                </p:menuitem>
+                <p:menuitem value=" Courses " outcome="Courses.xhtml" icon="pi pi-book" >
+                    <f:param name="i" value="0"/>
+                </p:menuitem>
+            
+        </p:tabMenu>
+        
+              
+        <p:dataTable id="dt-courses" widgetVar="dtCourses" var="course" value="#{courseBean.courselist}"
+                     reflow="true" styleClass="Courses-table" selection="#{courseBean.selectedCourses}"
+                     rowKey="#{course.courseId}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+            
+            <f:facet name="header">
+                 <p:toolbar>
+             <p:toolbarGroup>
+                 <p:commandButton value=" Add " icon="pi pi-plus" actionListener="#{courseBean.openNew()}" oncomplete="PF('managedcourseDialog').show();"
+                             update='dialogs:manage-course-content'    styleClass="ui-button-success" style="margin-right: .5rem">
+                   <p:resetInput target="dialogs:manage-course-content" />
+                </p:commandButton>
+                 
+                 
+           
+             </p:toolbarGroup>
+             <p:toolbarGroup>  
+                   <span style="font-weight: bold; margin-right: 10px; ">Courses </span>
+                    <span class="filter-container ui-input-icon-left"> <i class="pi pi-search"></i>
+                        <p:inputText id="globalFilter" onkeyup="PF('dtCourses').filter()" placeholder="Search" />
+                    </span>
+                </p:toolbarGroup>
+        </p:toolbar>
+               </f:facet>
+            
+            
+              
+            
+            <p:column width="20px" selectionMode="multiple" exportable="false"></p:column>
+            
+        <p:column id="courseid" width="60px" headerText="ID" sortBy="#{course.courseId}" filterBy="#{course.courseId}">
+            <h:outputText value="#{course.courseId}" />
+            </p:column>
+                <p:column headerText=" TITLE" sortBy="#{course.title}" filterBy="#{course.title}">
+                <h:outputText value="#{course.title}" />
+            </p:column>
+                <p:column headerText=" Degree" sortBy="#{course.totalDegree}" filterBy="#{course.totalDegree}">
+                <h:outputText value="#{course.totalDegree}" />
+            </p:column>
+            
+            
+        
+           <p:column headerText="view Students">
+                <p:commandButton value="show" update=":form:messages :dialogs2:StudentcourseDialog" actionListener="#{courseBean.fetchStudentCourses()}"
+                               oncomplete="PF('StudentcourseDialog').show()" styleClass="rounded-button ui-button-warning"  process="@this" > 
+                 <f:setPropertyActionListener value="#{course}" target="#{courseBean.course}" />
+                 
+              </p:commandButton>
+            </p:column>    
+            
+           <p:column exportable="false">
+                 <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-course-content"
+                    oncomplete="PF('managedcourseDialog').show()"
+                    styleClass="edit-button rounded-button ui-button-success" process="@this">
+                    <f:setPropertyActionListener value="#{course}" target="#{courseBean.course}" />
+                    <p:resetInput target=":dialogs:manage-course-content" />
+                </p:commandButton>
+            
+               
+            </p:column>
+   
+        </p:dataTable>
+        
+        </h:form>
+        <h:form id="dialogs">
+        <p:dialog header="Course Details" showEffect="fade" modal="true" widgetVar="managedcourseDialog"
+            responsive="true">
+             <p:outputPanel id="manage-course-content" class="ui-fluid">
+                <p:outputPanel rendered="#{not empty courseBean.course}">
+                    
+                    
+
+                     <div class="field">
+                        <p:outputLabel for="Title">Title :</p:outputLabel>
+                        <p:inputText id="Title" value="#{courseBean.course.title}" required="true" />
+                    </div>
+                    
+                   <div class="field">
+                        <p:outputLabel for="Degree">Degree :</p:outputLabel>
+                        <p:inputNumber id="Degree" value="#{courseBean.course.totalDegree}"  />
+                    </div>
+                </p:outputPanel>
+                 </p:outputPanel>
+            <f:facet name="footer">
+                <p:commandButton value="Save"  icon="pi pi-check"  actionListener="#{courseBean.savecourse()}"  update="manage-course-content" process="manage-course-content @this"  />
+                    
+                <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('managedcourseDialog').hide()"
+                    class="ui-button-secondary" type="button"  />
+            </f:facet>
+            </p:dialog>
+       
+         
+        
+
+    </h:form>
+        
+      
+          <h:form id="dialogs2"> 
+        <p:dialog id="StudentcourseDialog" header="List Of Students" showEffect="fade" modal="true" widgetVar="StudentcourseDialog"
+                  responsive="true" width="750px">
+             
+            
+              
+        <p:dataTable id="dt-studentcourses" widgetVar="dtstudentcourse" var="studentcourse" value="#{courseBean.listStudentCourses}"
+                     reflow="true" styleClass="Students-table" selection="#{courseBean.selected_StudentCourses}"
+                     rowKey="#{studentcourse.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+    
+            
+        <p:column id="studentid" width="60px" headerText="ID" sortBy="#{studentcourse.student.studentId}" filterBy="#{studentcourse.student.studentId}" >
+                <h:outputText value="#{studentcourse.student.studentId}" />
+            </p:column>
+            <p:column width="100 px" headerText=" First Name" sortBy="#{studentcourse.student.firstName}" filterBy="#{studentcourse.student.firstName}">
+                <h:outputText value="#{studentcourse.student.firstName}" />
+            </p:column>
+            <p:column width="100 px" headerText=" Last Name" sortBy="#{studentcourse.student.lastName}" filterBy="#{studentcourse.student.lastName}">
+                <h:outputText value="#{studentcourse.student.lastName}" />
+            </p:column>
+            
+            <p:column width="90px" headerText="Age" sortBy="#{studentcourse.student.age}" filterBy="#{studentcourse.student.age}">
+                <h:outputText value="#{studentcourse.student.age}" style="font-weight: 700"/>
+            </p:column>
+                
+            <p:column width="90px" headerText="Degree" sortBy="#{studentcourse.student.degree}" filterBy="#{studentcourse.student.degree}">
+                <h:outputText value="#{studentcourse.student.degree}" style="font-weight: 700"/>
+            </p:column>
+            
+            
+        </p:dataTable>
+        </p:dialog>
+
+         </h:form>
+    </h:body>
+</html>
+

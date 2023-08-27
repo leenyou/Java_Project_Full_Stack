@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    
+        <title>Students</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </h:head>
+    <h:body>
+        
+        <h:form id="form">
+        <p:growl id="messages" showDetail="true" />
+         <p:tabMenu activeIndex="#{param.i}">
+        
+                
+                <p:menuitem value=" Students "  outcome="Students.xhtml"  icon="pi pi-users" >
+                    <f:param name="i" value="0"/>
+                </p:menuitem>
+                <p:menuitem value=" Courses " outcome="Courses.xhtml" icon="pi pi-book" >
+                    <f:param name="i" value="1"/>
+                </p:menuitem>
+            
+        </p:tabMenu>
+       
+        <p:dataTable id="dt-students"  style="background-color: red" widgetVar="dtStudents" var="student" value="#{studentBean.studentlist}"
+                      reflow="true" styleClass="students-table" selection="#{studentBean.selectedStudents}"
+                      rowKey="#{student.studentId}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+            <f:facet name="header">
+                 <p:toolbar>
+             <p:toolbarGroup>
+                 <p:commandButton value=" Add " icon="pi pi-plus" actionListener="#{studentBean.openNew()}" oncomplete="PF('managedstudentDialog').show();"
+                             update='dialogs:manage-student-content'  styleClass="ui-button-success" style="margin-right: .5rem">
+                   <p:resetInput target="dialogs:manage-student-content" />
+                </p:commandButton>
+                 <p:commandButton id="delete-students-button" value="#{studentBean.deleteButtonMessage}"
+                    icon="pi pi-trash" actionListener="#{studentBean.deleteSelectedStudents}"
+                    styleClass="ui-button-danger" disabled="#{!studentBean.hasSelectedStudents()}" update="@this">
+                    <p:confirm header="Confirmation" message="Delete the selected Students?"
+                        icon="pi pi-exclamation-triangle" />
+                </p:commandButton>
+           
+             </p:toolbarGroup>
+             <p:toolbarGroup>  
+                   <span style="font-weight: bold; margin-right: 10px; ">Students </span>
+                    <span class="filter-container ui-input-icon-left"> <i class="pi pi-search"></i>
+                        <p:inputText id="globalFilter" onkeyup="PF('dtStudents').filter()" placeholder="Search" />
+                    </span>
+                </p:toolbarGroup>
+        </p:toolbar>
+               
+            </f:facet>
+             <p:ajax event="rowSelect" update=":form:dt-students:delete-students-button" />
+            <p:ajax event="rowUnselect" update=":form:dt-students:delete-students-button" />
+            <p:ajax event="rowSelectCheckbox" update=":form:dt-students:delete-students-button" />
+            <p:ajax event="rowUnselectCheckbox" update=":form:dt-students:delete-students-button" />
+            <p:ajax event="toggleSelect" update=":form:dt-students:delete-students-button" />
+            
+            <p:column width="20px" selectionMode="multiple" exportable="false"></p:column>
+            
+            
+        <p:column id="studentid" width="60px" headerText="ID" sortBy="#{student.studentId}" filterBy="#{student.studentId}">
+                <h:outputText value="#{student.studentId}" />
+            </p:column>
+            <p:column headerText=" First Name" sortBy="#{student.firstName}" filterBy="#{student.firstName}">
+                <h:outputText value="#{student.firstName}" />
+            </p:column>
+            <p:column headerText=" Last Name" sortBy="#{student.lastName}" filterBy="#{student.lastName}">
+                <h:outputText value="#{student.lastName}" />
+            </p:column>
+            
+            <p:column headerText="Age" sortBy="#{student.age}" filterBy="#{student.age}">
+                <h:outputText value="#{student.age}" style="font-weight: 700"/>
+            </p:column>
+                
+            <p:column headerText="Degree" sortBy="#{student.degree}" filterBy="#{student.degree}">
+                <h:outputText value="#{student.degree}" style="font-weight: 700"/>
+            </p:column>
+        
+            <p:column headerText="view courses">
+                <p:commandButton value="show" update=":form:messages :dialogs2:StudentcourseDialog" actionListener="#{studentBean.fetchStudentCourses()}"
+                               oncomplete="PF('StudentcourseDialog').show()" styleClass="rounded-button ui-button-secondary"  process="@this" > 
+                 <f:setPropertyActionListener value="#{student}" target="#{studentBean.student}" />
+                 
+              </p:commandButton>
+            </p:column>   
+            
+           <p:column exportable="false">
+                <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-student-content"
+                    oncomplete="PF('managedstudentDialog').show()"
+                    styleClass="edit-button rounded-button ui-button-success" process="@this">
+                    <f:setPropertyActionListener value="#{student}" target="#{studentBean.student}" />
+                    <p:resetInput target=":dialogs:manage-student-content" />
+                </p:commandButton>
+               <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                 process="@this"
+                                 oncomplete="PF('deleteStudentDialog').show()">
+                    <f:setPropertyActionListener value="#{student}" target="#{studentBean.student}" />
+                </p:commandButton>
+               
+            </p:column>
+            
+            
+            
+        
+        </p:dataTable>
+        </h:form>
+        <h:form id="dialogs">
+        <p:dialog header="Student Details" showEffect="fade" modal="true" widgetVar="managedstudentDialog"
+            responsive="true">
+             <p:outputPanel id="manage-student-content" class="ui-fluid">
+                <p:outputPanel rendered="#{not empty studentBean.student}">
+                    
+                    <div class="field">
+                        <p:outputLabel for="first_name">First Name :</p:outputLabel>
+                        <p:inputText id="first_name" value="#{studentBean.student.firstName}" required="true" />
+                    </div>
+
+                     <div class="field">
+                        <p:outputLabel for="last_name">Last Name :</p:outputLabel>
+                        <p:inputText id="last_name" value="#{studentBean.student.lastName}" required="true" />
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="Age">Age :</p:outputLabel>
+                        <p:inputNumber id="Age" value="#{studentBean.student.age}"  />
+                    </div>
+                   <div class="field">
+                        <p:outputLabel for="Degree">Degree :</p:outputLabel>
+                        <p:inputNumber id="Degree" value="#{studentBean.student.degree}"  />
+                    </div>
+                </p:outputPanel>
+                 </p:outputPanel>
+            <f:facet name="footer">
+                <p:commandButton value="Save"  icon="pi pi-check"  actionListener="#{studentBean.savestudent()}"  update="manage-student-content" process="manage-student-content @this"  />
+                    
+                <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('managedstudentDialog').hide()"
+                    class="ui-button-secondary" type="button"  />
+            </f:facet>
+        </p:dialog>
+         <p:confirmDialog widgetVar="deleteStudentDialog" showEffect="fade" width="300"
+            message="Delete the Student?" header="Confirm" severity="warn">
+            <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{studentBean.deleteStudent}"
+                process="@this" update=":form:messages :form:dt-students:delete-students-button"
+                oncomplete="PF('deleteStudentDialog').hide()" />
+            <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                onclick="PF('deleteStudentDialog').hide()" />
+        </p:confirmDialog>
+             <p:confirmDialog global="true" showEffect="fade" width="300">
+            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                icon="pi pi-times" />
+        </p:confirmDialog>
+
+    </h:form>
+        
+
+        
+   <h:form id="dialogs2"> 
+        <p:dialog id="StudentcourseDialog" header="List Of Courses" showEffect="fade" modal="true" widgetVar="StudentcourseDialog"
+                  responsive="true" width="750px">
+             
+            <p:toolbarGroup id="toolcourse">
+                 <p:commandButton value=" Add " icon="pi pi-plus" actionListener="#{studentBean.savestudentcourse}" 
+                                  process="toolcourse @this" oncomplete="PF('AddStudentcourseDialog').show()"      update='form:messages dialogs3:addstudentcourse @this'    styleClass="ui-button-help" style="margin-right: .5rem">
+                   <p:resetInput target="toolcourse" />
+                </p:commandButton>
+            </p:toolbarGroup> 
+              
+        <p:dataTable id="dt-studentcourses" widgetVar="dtstudentcourse" var="studentcourse" value="#{studentBean.listStudentCourses}"
+                     reflow="true" styleClass="Courses-table" selection="#{studentBean.selected_StudentCourses}"
+                     rowKey="#{studentcourse.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+    
+   
+            <p:column headerText=" Course" sortBy="#{studentcourse.course.title}" filterBy="#{studentcourse.course.title}"  width="100 px">
+                <h:outputText value="#{studentcourse.course.title}" />
+            </p:column>
+              
+            <p:column headerText=" Joining Date" sortBy="#{studentcourse.joiningDate}" filterBy="#{studentcourse.joiningDate}" width="70 px" >
+                <h:outputText value="#{studentcourse.joiningDate}"   />
+            </p:column>
+            <p:column headerText=" Student Degree" sortBy="#{studentcourse.degree}" filterBy="#{studentcourse.degree}" width="50 px">
+                <h:outputText value="#{studentcourse.degree}" />
+            </p:column>
+            
+        </p:dataTable>
+        </p:dialog>
+    </h:form>  
+        <h:form id="dialogs3" >
+            <p:dialog id="addstudentcourse" header="Add Student Course" showEffect="fade" modal="true" widgetVar="AddStudentcourseDialog"
+                      responsive="true" width="300px">
+                <p:outputPanel id="Add_Studentcourse_Dialog" class="ui-fluid">
+                <div class="field">
+                        <p:outputLabel for="newcourse">Choose Course :</p:outputLabel>
+                        <p:selectOneMenu id="newcourse" value="#{studentBean.newstudentcourse.course}"  converter="#{coursesConverter}" placeholder="Select Course"  style="width:150px">
+                    <f:selectItem itemLabel="Choose Course .." itemValue="#{null}" />
+                    <f:selectItems value="#{studentBean.courses}" itemLabel="#{course.title}" itemValue="#{course}"  var="course" />
+                   </p:selectOneMenu>
+                </div>
+                
+          <div class="field">
+                        <p:outputLabel for="calendar">joining Date :</p:outputLabel>
+                <p:calendar id="calendar" value="#{studentBean.newstudentcourse.joiningDate}" pattern="dd/MM/yyyy" placeholder="Joinning Date" style="width:70px"  />
+                </div>
+               <div class="field">
+                        <p:outputLabel for="Degree">Degree :</p:outputLabel>
+                <p:inputNumber id="Degree" value="#{studentBean.newstudentcourse.degree}" placeholder="Degree" style="width: 50px" />
+                </div>
+               
+            </p:outputPanel>
+                 <f:facet name="footer">
+                 <p:commandButton value="Save"  icon="pi pi-check"  actionListener="#{studentBean.savestudentcourse}"  update="Add_Studentcourse_Dialog" process="Add_Studentcourse_Dialog @this"  />
+                </f:facet>
+            </p:dialog>   
+        </h:form>
+        
+       
+        
+    </h:body>
+</html>
